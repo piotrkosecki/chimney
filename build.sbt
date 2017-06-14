@@ -1,4 +1,5 @@
 val settings = Seq(
+  organization := "io.scalaland",
   version := "0.1.3",
   scalaVersion := "2.12.2",
   scalacOptions ++= Seq(
@@ -107,7 +108,6 @@ lazy val docs = project
   .dependsOn(chimneyJVM)
 
 lazy val publishSettings = Seq(
-  organization := "io.scalaland",
   homepage := Some(url("https://scalaland.io")),
   licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
   scmInfo := Some(
@@ -151,20 +151,20 @@ lazy val docSettings = Seq(
   micrositeHighlightTheme := "atom-one-light",
   micrositeHomepage := "http://github.com/scalaland/chimney",
   micrositeBaseUrl := "/chimney",
-  micrositeDocumentationUrl := "api",
+//  micrositeDocumentationUrl := "api",
   micrositeGithubOwner := "scalalandio",
 //  micrositeExtraMdFiles := Map(file("CONTRIBUTING.md") -> "contributing.md"),
   micrositeGithubRepo := "chimney",
-  micrositePalette := Map(
-    "brand-primary" -> "#5B5988",
-    "brand-secondary" -> "#292E53",
-    "brand-tertiary" -> "#222749",
-    "gray-dark" -> "#49494B",
-    "gray" -> "#7B7B7E",
-    "gray-light" -> "#E5E5E6",
-    "gray-lighter" -> "#F4F3F4",
-    "white-color" -> "#FFFFFF"),
-  autoAPIMappings := true,
+//  micrositePalette := Map(
+//    "brand-primary" -> "#5B5988",
+//    "brand-secondary" -> "#292E53",
+//    "brand-tertiary" -> "#222749",
+//    "gray-dark" -> "#49494B",
+//    "gray" -> "#7B7B7E",
+//    "gray-light" -> "#E5E5E6",
+//    "gray-lighter" -> "#F4F3F4",
+//    "white-color" -> "#FFFFFF"),
+//  autoAPIMappings := true,
 //  unidocProjectFilter in (ScalaUnidoc, unidoc) :=
 //    inProjects(docsSourcesAndProjects(scalaVersion.value)._2:_*),
 //  docsMappingsAPIDir := "api",

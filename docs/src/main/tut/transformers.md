@@ -1,11 +1,11 @@
 ---
-layout: home
-title:  "Home"
-section: "index"
-position: 1
+layout: page
+title:  "Transformers"
+section: "transformers"
+position: 2
 ---
 
-# Index
+# Transformers
 
 Cats is a library which provides abstractions for functional
 programming in the [Scala programming language](https://scala-lang.org).
