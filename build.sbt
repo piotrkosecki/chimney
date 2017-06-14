@@ -155,15 +155,24 @@ lazy val docSettings = Seq(
   micrositeGithubOwner := "scalalandio",
 //  micrositeExtraMdFiles := Map(file("CONTRIBUTING.md") -> "contributing.md"),
   micrositeGithubRepo := "chimney",
-//  micrositePalette := Map(
-//    "brand-primary" -> "#5B5988",
-//    "brand-secondary" -> "#292E53",
-//    "brand-tertiary" -> "#222749",
-//    "gray-dark" -> "#49494B",
-//    "gray" -> "#7B7B7E",
-//    "gray-light" -> "#E5E5E6",
-//    "gray-lighter" -> "#F4F3F4",
-//    "white-color" -> "#FFFFFF"),
+  micrositePalette := Map(
+    "brand-primary" -> "#88695B",
+    "brand-secondary" -> "#533E29",
+    "brand-tertiary" -> "#493722",
+    "gray-dark" -> "#49494B",
+    "gray" -> "#7B7B7E",
+    "gray-light" -> "#E5E5E6",
+    "gray-lighter" -> "#F4F3F4",
+    "white-color" -> "#FFFFFF"
+//"brand-primary" -> "#5B5988",
+//"brand-secondary" -> "#292E53",
+//"brand-tertiary" -> "#222749",
+//"gray-dark" -> "#49494B",
+//"gray" -> "#7B7B7E",
+//"gray-light" -> "#E5E5E6",
+//"gray-lighter" -> "#F4F3F4",
+//"white-color" -> "#FFFFFF"
+  ),
 //  autoAPIMappings := true,
 //  unidocProjectFilter in (ScalaUnidoc, unidoc) :=
 //    inProjects(docsSourcesAndProjects(scalaVersion.value)._2:_*),
