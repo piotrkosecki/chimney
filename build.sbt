@@ -1,7 +1,14 @@
+import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
+
+val versions = new {
+  val scalatestVersion = "3.0.5"
+  val scalaVersion = "2.12.6"
+}
+
 val settings = Seq(
-  version := "0.1.4",
-  scalaVersion := "2.12.2",
-  crossScalaVersions := Seq("2.11.11", "2.12.2"),
+  version := "0.2.1",
+  scalaVersion := versions.scalaVersion,
+  crossScalaVersions := Seq("2.11.12", "2.12.6"),
   scalacOptions ++= Seq(
     "-target:jvm-1.8",
     "-encoding",
@@ -28,7 +35,6 @@ val settings = Seq(
     "-Xlint:doc-detached",
     "-Xlint:inaccessible",
     "-Xlint:infer-any",
-    "-Xlint:missing-interpolator",
     "-Xlint:nullary-override",
     "-Xlint:nullary-unit",
     "-Xlint:option-implicit",
@@ -37,20 +43,18 @@ val settings = Seq(
     "-Xlint:private-shadow",
     "-Xlint:stars-align",
     "-Xlint:type-parameter-shadow",
-    "-Xlint:unsound-match"
+    "-Xlint:unsound-match",
+    "-Xexperimental"
   ),
   scalacOptions in (Compile, console) --= Seq("-Ywarn-unused:imports", "-Xfatal-warnings")
 )
 
-val versions = new {
-  val shapelessVersion = "2.3.2"
-  val scalatestVersion = "3.0.3"
-  val scalafmt = "1.0.0-RC1"
-}
-
 val dependencies = Seq(
-  libraryDependencies += "com.chuusai" %%% "shapeless" % versions.shapelessVersion,
-  libraryDependencies += "org.scalatest" %%% "scalatest" % versions.scalatestVersion % "test"
+  libraryDependencies ++= Seq(
+    "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
+    "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
+    "org.scalatest" %%% "scalatest" % versions.scalatestVersion % "test"
+  )
 )
 
 lazy val root = project
@@ -58,17 +62,10 @@ lazy val root = project
   .settings(settings: _*)
   .settings(publishSettings: _*)
   .settings(noPublishSettings: _*)
-  .settings(commands += Command.args("scalafmt", "Run scalafmt cli.") {
-    case (state, args) =>
-      val Right(scalafmt) =
-        org.scalafmt.bootstrap.ScalafmtBootstrap.fromVersion(versions.scalafmt)
-      scalafmt.main("--non-interactive" +: args.toArray)
-      state
-  })
   .aggregate(chimneyJVM, chimneyJS, protosJVM, protosJS)
   .dependsOn(chimneyJVM, chimneyJS)
 
-lazy val chimney = crossProject
+lazy val chimney = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
   .settings(
     moduleName := "chimney",
@@ -83,11 +80,11 @@ lazy val chimney = crossProject
 lazy val chimneyJVM = chimney.jvm
 lazy val chimneyJS = chimney.js
 
-lazy val protos = crossProject
+lazy val protos = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
   .settings(
     name := "chimney-protos",
-    libraryDependencies += "com.trueaccord.scalapb" %%% "scalapb-runtime" % com.trueaccord.scalapb.compiler.Version.scalapbVersion,
+    libraryDependencies += "com.thesamet.scalapb" %%% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion,
     PB.targets in Compile := Seq(scalapb.gen() -> (sourceManaged in Compile).value),
     PB.protoSources in Compile := Seq(file("protos/src/main/protobuf")),
     coverageExcludedPackages := "<empty>;(.*)"
@@ -134,4 +131,22 @@ lazy val publishSettings = Seq(
 )
 
 lazy val noPublishSettings =
-  Seq(publish := (), publishLocal := (), publishArtifact := false)
+  Seq(skip in publish := true, publishArtifact := false)
+
+lazy val readme = scalatex
+  .ScalatexReadme(
+    projectId = "readme",
+    wd = file(""),
+    url = "https://github.com/scalalandio/chimney/tree/master",
+    source = "Readme"
+  )
+  .settings(noPublishSettings : _*)
+  .settings(
+    scalaVersion := versions.scalaVersion,
+    siteSourceDirectory := target.value / "scalatex",
+    git.remoteRepo := "git@github.com:scalalandio/chimney.git",
+    includeFilter in (makeSite in Jekyll) := new FileFilter {
+      def accept(p: File) = true
+    }
+  )
+  .enablePlugins(GhpagesPlugin)

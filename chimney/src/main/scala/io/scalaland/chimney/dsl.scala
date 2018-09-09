@@ -1,44 +1,41 @@
 package io.scalaland.chimney
 
-import io.scalaland.chimney.internal.Modifier
-import shapeless.{::, HList, HNil, Witness}
+import io.scalaland.chimney.internal.{ChimneyBlackboxMacros, ChimneyWhiteboxMacros, DisableDefaults, Empty, Cfg}
+
+import scala.language.experimental.macros
 
 object dsl {
 
   implicit class TransformerOps[From](val source: From) extends AnyVal {
 
-    final def into[To]: TransformerInto[From, To, HNil] =
-      new TransformerInto(source, HNil)
+    final def into[To]: TransformerInto[From, To, Empty] =
+      new TransformerInto[From, To, Empty](source, Map.empty, Map.empty)
 
-    final def transformInto[To](implicit derivedTransformer: DerivedTransformer[From, To, HNil]): To =
-      derivedTransformer.transform(source, HNil)
+    final def transformInto[To](implicit transformer: Transformer[From, To]): To =
+      transformer.transform(source)
   }
 
-  final class TransformerInto[From, To, Modifiers <: HList](val source: From, val modifiers: Modifiers) {
+  final class TransformerInto[From, To, C <: Cfg](val source: From,
+                                                  val overrides: Map[String, Any],
+                                                  val instances: Map[(String, String), Any]) {
 
-    def withFieldConst[T](label: Witness.Lt[Symbol],
-                          value: T): TransformerInto[From, To, Modifier.fieldFunction[label.T, From, T] :: Modifiers] =
-      withFieldComputed(label, _ => value)
+    def disableDefaultValues: TransformerInto[From, To, DisableDefaults[C]] =
+      new TransformerInto[From, To, DisableDefaults[C]](source, overrides, instances)
 
-    def withFieldComputed[T](
-      label: Witness.Lt[Symbol],
-      map: From => T
-    ): TransformerInto[From, To, Modifier.fieldFunction[label.T, From, T] :: Modifiers] =
-      new TransformerInto(source, new Modifier.fieldFunction[label.T, From, T](map) :: modifiers)
+    def withFieldConst[T, U](selector: To => T, value: U): TransformerInto[From, To, _] =
+      macro ChimneyWhiteboxMacros.withFieldConstImpl[From, To, T, U, C]
 
-    def withFieldRenamed(
-      labelFrom: Witness.Lt[Symbol],
-      labelTo: Witness.Lt[Symbol]
-    ): TransformerInto[From, To, Modifier.relabel[labelFrom.T, labelTo.T] :: Modifiers] =
-      new TransformerInto(source, new Modifier.relabel[labelFrom.T, labelTo.T] :: modifiers)
+    def withFieldComputed[T, U](selector: To => T, map: From => U): TransformerInto[From, To, _] =
+      macro ChimneyWhiteboxMacros.withFieldComputedImpl[From, To, T, U, C]
 
-    def withCoproductInstance[Inst](
-      f: Inst => To
-    ): TransformerInto[From, To, Modifier.coproductInstance[Inst, To] :: Modifiers] =
-      new TransformerInto(source, new Modifier.coproductInstance[Inst, To](f) :: modifiers)
+    def withFieldRenamed[T, U](selectorFrom: From => T, selectorTo: To => U): TransformerInto[From, To, _] =
+      macro ChimneyWhiteboxMacros.withFieldRenamedImpl[From, To, T, U, C]
 
-    def transform(implicit transformer: DerivedTransformer[From, To, Modifiers]): To =
-      transformer.transform(source, modifiers)
+    def withCoproductInstance[Inst](f: Inst => To): TransformerInto[From, To, _] =
+      macro ChimneyWhiteboxMacros.withCoproductInstanceImpl[From, To, Inst, C]
+
+    def transform: To =
+      macro ChimneyBlackboxMacros.transformImpl[From, To, C]
   }
 
   implicit class PatcherOps[T](val obj: T) extends AnyVal {
